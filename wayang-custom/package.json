@@ -1,0 +1,54 @@
+{
+  "_args": [
+    [
+      "wayang@1.0.8",
+      "/home/tawan/Projetos/nodejs"
+    ]
+  ],
+  "_from": "wayang@1.0.8",
+  "_id": "wayang@1.0.8",
+  "_inBundle": false,
+  "_integrity": "sha512-aDSjjBpxlhaRLdveJrGF017yWzqZXRTic/9C9iPvbe0K9MvuhW3vloPrZq4PJOgp29cso4AYBiQkiBgD0BoUYQ==",
+  "_location": "/wayang",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "wayang@1.0.8",
+    "name": "wayang",
+    "escapedName": "wayang",
+    "rawSpec": "1.0.8",
+    "saveSpec": null,
+    "fetchSpec": "1.0.8"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/wayang/-/wayang-1.0.8.tgz",
+  "_spec": "1.0.8",
+  "_where": "/home/tawan/Projetos/nodejs",
+  "author": {
+    "name": "luklukaha@gmail.com"
+  },
+  "bugs": {
+    "url": "https://github.com/lukluk/wayang/issues"
+  },
+  "dependencies": {},
+  "description": "bypass reCAPTCHA dan anything that needs to be done manually",
+  "devDependencies": {},
+  "homepage": "https://github.com/lukluk/wayang#readme",
+  "keywords": [
+    "puppeteer"
+  ],
+  "license": "ISC",
+  "main": "index.js",
+  "name": "wayang",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lukluk/wayang.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.0.8"
+}

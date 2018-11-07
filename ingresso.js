@@ -5,7 +5,7 @@ const csv = require('csvtojson');
 const readline = require('readline');
 const { google } = require('googleapis');
 const CronJob = require('cron').CronJob;
-
+const dalang = require('./wayang-custom');
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 const TOKEN_PATH = 'token.json';
@@ -34,6 +34,39 @@ const sleepBot = async (page, duration = 500) => {
             setTimeout(resolve, duration);
         });
     }, duration);
+};
+
+const waitForRecaptcha = async (page, pageClient, kimantep) => {
+
+    kimantep.connectServer();
+    kimantep.listenToDalang(async (action) => {
+        if (action == 'start') {
+            console.log('INICIANDO WEBSOCKET');
+        }
+        if(action == 'close') {
+            console.log('Finalizando WEBSOCKET');
+        }
+    });
+
+    await pageClient.goto('http://localhost:3388');
+    await page.waitForSelector('#g-recaptcha-response');
+    await page.focus('#g-recaptcha-response');
+
+    await page.evaluate(async () => {
+        //document.querySelector('#g-recaptcha-response').style.display = 'block';
+        let elemento = document.querySelector('#g-recaptcha-response');
+        let resp;
+
+        while (true) {
+            await new Promise(function (resolve) {
+                setTimeout(resolve, 10000);
+            });
+            resp = elemento.value;
+            if (resp && resp != '') {
+                break;
+            }
+        }
+    });
 };
 
 const screenshot = 'eventim_results.png';
@@ -195,7 +228,16 @@ function listMajors(auth) {
 
                                 await page.type('#cpf', params.cpf)
 
-                                await page.waitFor(25000);
+                                let kimantep = new dalang({
+                                    page:page
+                                });
+                                const pageClient = await browser.newPage();
+                                await waitForRecaptcha(page, pageClient, kimantep);
+                                
+                                if (!pageClient.isClosed()) {
+                                    await pageClient.close();
+                                }
+                                kimantep.disconnectServer();
 
                                 await page.evaluate(async (params) => {
 
