@@ -171,13 +171,8 @@ function listMajors(auth) {
                                 });
 
                                 await page.type('#cpf', params.cpf)
-                                await page.evaluate(async (params) => {
-
-                                    document.querySelector('#recaptcha-anchor > div.recaptcha-checkbox-checkmark').click()
-
-                                }, params)
-
-                                await page.waitFor(5000);
+                                
+                                await page.waitFor(25000);
 
                                 await page.evaluate(async (params) => {
 
