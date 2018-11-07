@@ -4,6 +4,8 @@ const request = require('request-promise');
 const csv = require('csvtojson');
 const readline = require('readline');
 const { google } = require('googleapis');
+const CronJob = require('cron').CronJob;
+
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 const TOKEN_PATH = 'token.json';
@@ -40,13 +42,34 @@ const file = fs.readFileSync('ingresso.config');
 const line = file.toString('utf8').split('\n');
 
 const sheetId = line[0].split(/=(.+)/)[1];
+const timeExecute = line[1].split(/=(.+)/)[1];
 let browser;
+let isRunning = false;
 
 // Load client secrets from a local file.
 fs.readFile('credentials.json', (err, content) => {
     if (err) return console.log('Error loading client secret file:', err);
-    // Authorize a client with credentials, then call the Google Sheets API.
-    authorize(JSON.parse(content), listMajors);
+
+    const job = new CronJob(
+        {
+            cronTime: timeExecute,
+            onTick: function () {
+
+                if (!isRunning) {
+                    isRunning = true;
+
+                    setTimeout(function () {
+                        // Authorize a client with credentials, then call the Google Sheets API.
+                        authorize(JSON.parse(content), listMajors);
+                        isRunning = false;
+                    }, 3000);
+                }
+
+            }
+        })
+    job.start();
+
+
 });
 
 /**
@@ -141,7 +164,7 @@ function listMajors(auth) {
                             quantidade: row[15],
                             cartao_numero: row[16],
                             cartao_nome: row[17],
-                            cartao_data_vencimento: row[18],                        
+                            cartao_data_vencimento: row[18],
                             cartao_cvc: row[20],
                             cartao_bandeira: row[21]
                         };
@@ -171,7 +194,7 @@ function listMajors(auth) {
                                 });
 
                                 await page.type('#cpf', params.cpf)
-                                
+
                                 await page.waitFor(25000);
 
                                 await page.evaluate(async (params) => {
@@ -207,12 +230,12 @@ function listMajors(auth) {
 
                                         })
 
-                                    if(params.retirada_local) {
+                                    if (params.retirada_local) {
                                         document.querySelector('#radioShippingTypeWillCall').checked = 1;
                                         document.querySelector('#radioShippingTypeDelivery').checked = 0;
                                     }
 
-                                    if(!params.retirada_local) {
+                                    if (!params.retirada_local) {
                                         document.querySelector('#radioShippingTypeWillCall').checked = 1;
                                         document.querySelector('#radioShippingTypeDelivery').checked = 0;
 
@@ -230,12 +253,12 @@ function listMajors(auth) {
 
                                 await page.waitFor(3000)
 
-                                await page.evaluate(async (params) =>{
+                                await page.evaluate(async (params) => {
 
                                     document.querySelector('#main > section > form > fieldset.col-xs-12.rir-cont.rir-delivery-data.p-t-3 > section > div > div:nth-child(2) > div:nth-child(5) > div.col-xs-3.m-b-1 > a').click()
 
                                 }, params)
-                                
+
                                 await page.waitFor(3000)
 
                                 await page.type('#number', params.endereco_numero)
@@ -243,24 +266,24 @@ function listMajors(auth) {
 
                                 await page.type('#card-brand', params.cartao_bandeira)
                                 await page.type('#card-number', params.cartao_numero)
-                                await page.type('#card-name', params.cartao_nome)                    
+                                await page.type('#card-name', params.cartao_nome)
 
-                                await page.type('#card-cpf', params.cpf)                    
-                                await page.type('#card-valid', params.cartao_data_vencimento)                    
-                                await page.type('#card-name', params.cartao_nome)     
-                                await page.type('#cvv', params.cartao_cvc)     
-                                
-                                
-                                await page.evaluate(async ()=> {
+                                await page.type('#card-cpf', params.cpf)
+                                await page.type('#card-valid', params.cartao_data_vencimento)
+                                await page.type('#card-name', params.cartao_nome)
+                                await page.type('#cvv', params.cartao_cvc)
+
+
+                                await page.evaluate(async () => {
 
                                     document.querySelector('#main > section > form > div.col-xs-12.m-b-3.rir-cont.rir-terms > div > div:nth-child(2) > div > label > input').checked = 1
-                                    
+
                                 })
 
 
                                 await page.waitFor(3000)
 
-                                await page.evaluate(async ()=> {
+                                await page.evaluate(async () => {
 
 
                                     document.querySelector('#main > section > form > div.col-xs-12.rir-cont.rir-buttons > div > a').click()
@@ -303,7 +326,7 @@ function listMajors(auth) {
 
                                         });
 
-                                }, params);                               
+                                }, params);
 
                                 index++;
 
