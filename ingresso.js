@@ -43,7 +43,7 @@ const waitForRecaptcha = async (page, pageClient, kimantep) => {
         if (action == 'start') {
             console.log('INICIANDO WEBSOCKET');
         }
-        if(action == 'close') {
+        if (action == 'close') {
             console.log('Finalizando WEBSOCKET');
         }
     });
@@ -69,7 +69,7 @@ const waitForRecaptcha = async (page, pageClient, kimantep) => {
     });
 };
 
-const screenshot = 'eventim_results.png';
+const screenshot = 'ingresso_results.png';
 
 const file = fs.readFileSync('ingresso.config');
 const line = file.toString('utf8').split('\n');
@@ -83,24 +83,30 @@ let isRunning = false;
 fs.readFile('credentials.json', (err, content) => {
     if (err) return console.log('Error loading client secret file:', err);
 
-    const job = new CronJob(
-        {
-            cronTime: timeExecute,
-            onTick: function () {
+    setTimeout(function () {
+        // Authorize a client with credentials, then call the Google Sheets API.
+        authorize(JSON.parse(content), listMajors);
+        isRunning = false;
+    }, 3000);
 
-                if (!isRunning) {
-                    isRunning = true;
+    // const job = new CronJob(
+    //     {
+    //         cronTime: timeExecute,
+    //         onTick: function () {
 
-                    setTimeout(function () {
-                        // Authorize a client with credentials, then call the Google Sheets API.
-                        authorize(JSON.parse(content), listMajors);
-                        isRunning = false;
-                    }, 3000);
-                }
+    //             if (!isRunning) {
+    //                 isRunning = true;
 
-            }
-        })
-    job.start();
+    //                 setTimeout(function () {
+    //                     // Authorize a client with credentials, then call the Google Sheets API.
+    //                     authorize(JSON.parse(content), listMajors);
+    //                     isRunning = false;
+    //                 }, 3000);
+    //             }
+
+    //         }
+    //     })
+    // job.start();
 
 
 });
@@ -198,9 +204,11 @@ function listMajors(auth) {
                             cartao_numero: row[16],
                             cartao_nome: row[17],
                             cartao_data_vencimento: row[18],
-                            cartao_cvc: row[20],
-                            cartao_bandeira: row[21]
+                            cartao_cvc: row[19],
+                            cartao_bandeira: row[20]
                         };
+
+                        console.log(params)
 
                         try {
 
@@ -228,27 +236,33 @@ function listMajors(auth) {
 
                                 await page.type('#cpf', params.cpf)
 
-                                let kimantep = new dalang({
-                                    page:page
-                                });
-                                const pageClient = await browser.newPage();
-                                await waitForRecaptcha(page, pageClient, kimantep);
-                                
-                                if (!pageClient.isClosed()) {
-                                    await pageClient.close();
-                                }
-                                kimantep.disconnectServer();
+                                await page.evaluate(async () => {
 
-                                await page.evaluate(async (params) => {
+                                    let elemento = document.querySelector('#g-recaptcha-response');
+                                    let resp;
+
+                                    while (true) {
+                                        await new Promise(function (resolve) {
+                                            setTimeout(resolve, 10000);
+                                        });
+                                        resp = elemento.value;
+                                        if (resp && resp != '') {
+                                            break;
+                                        }
+                                    }
+                                });
+
+                                await page.evaluate(async () => {
 
                                     document.querySelector('#main > div > section > div > form > div.row > div.form-group.col-xs-12.col-sm-4.m-b-05 > button').click();
 
-                                }, params)
+                                })
+
 
                                 await page.waitFor(3000);
 
                                 await page.type('#email', params.usuario)
-                                await page.type('#password', params.usuario)
+                                await page.type('#password', params.senha)
 
                                 await page.evaluate(async () => {
 
