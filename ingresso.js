@@ -208,15 +208,13 @@ function listMajors(auth) {
                             cartao_bandeira: row[20]
                         };
 
-                        console.log(params)
-
                         try {
 
-                            browser = await puppeteer.launch({
+                            browser = await puppeteer.launch({                                
                                 headless: false, // launch headful mode
                                 slowMo: 0, // slow down puppeteer script so that it's easier to follow visually
                                 devtools: false,
-                                ignoreHTTPSErrors: true,
+                                ignoreHTTPSErrors: true,                                
                                 args: [
                                     '--no-sandbox',
                                     '--disable-setuid-sandbox',
@@ -258,8 +256,8 @@ function listMajors(auth) {
 
                                 })
 
+                                await page.waitFor(5000);
 
-                                await page.waitFor(3000);
 
                                 await page.type('#email', params.usuario)
                                 await page.type('#password', params.senha)
@@ -270,119 +268,112 @@ function listMajors(auth) {
 
                                 })
 
-                                await page.waitFor(3000);
+                                await page.waitFor(5000);
+                
+                                alert('CONFIGURAR CATEGORIA');
 
                                 await page.evaluate(async (params) => {
 
-                                    document.querySelector('#tab-main-content0 > div').querySelectorAll('div.form-group.row')
+                                    alert(params.categoria);
 
-                                        .forEach(async item => {
+                                    if (params.categoria === 'INTEIRA') {
 
-                                            if (item.querySelector('label>span'.textContent.trim() == params.categoria)) {
+                                        alert('entrou aqui!!!! tentar comprar');
 
-                                                item.querySelector('select').value = params.quantidade;
+                                        let item = document.querySelector('#tab-main-content0 > div > fieldset:nth-child(1) > div:nth-child(1) > div > select');
 
+                                        console.log(item);
+                                        
+
+                                        if (item) {
+
+                                            item.selectedIndex = item.options.length - 1;
+
+                                            if (params.quantidade < item.value) {
+                                                item.value = params.quantidade;
                                             }
+                                        }
 
-                                        })
+                                    } else if (params.categoria === 'BENEFÍCIO ITAÚ 15%') {
 
-                                    if (params.retirada_local) {
-                                        document.querySelector('#radioShippingTypeWillCall').checked = 1;
-                                        document.querySelector('#radioShippingTypeDelivery').checked = 0;
-                                    }
+                                        let item = document.querySelector('#tab-main-content0 > div > fieldset:nth-child(1) > div.form-group.row.itau-type > div.col-xs-4.col-md-2 > select');
 
-                                    if (!params.retirada_local) {
-                                        document.querySelector('#radioShippingTypeWillCall').checked = 1;
-                                        document.querySelector('#radioShippingTypeDelivery').checked = 0;
+                                        if (item) {
 
-                                    }
+                                            item.selectedIndex = item.options.length - 1;
 
-                                }, params)
-
-                                await page.waitFor(2000);
-
-                                await page.type('#nameDelivery', params.nome)
-                                await page.type('#id', params.identidade)
-                                await page.type('#ddd', params.ddd)
-                                await page.type('#tel', params.telefone)
-                                await page.type('#cep', params.cep)
-
-                                await page.waitFor(3000)
-
-                                await page.evaluate(async (params) => {
-
-                                    document.querySelector('#main > section > form > fieldset.col-xs-12.rir-cont.rir-delivery-data.p-t-3 > section > div > div:nth-child(2) > div:nth-child(5) > div.col-xs-3.m-b-1 > a').click()
-
-                                }, params)
-
-                                await page.waitFor(3000)
-
-                                await page.type('#number', params.endereco_numero)
-                                await page.type('#complement', params.endereco_complemento)
-
-                                await page.type('#card-brand', params.cartao_bandeira)
-                                await page.type('#card-number', params.cartao_numero)
-                                await page.type('#card-name', params.cartao_nome)
-
-                                await page.type('#card-cpf', params.cpf)
-                                await page.type('#card-valid', params.cartao_data_vencimento)
-                                await page.type('#card-name', params.cartao_nome)
-                                await page.type('#cvv', params.cartao_cvc)
-
-
-                                await page.evaluate(async () => {
-
-                                    document.querySelector('#main > section > form > div.col-xs-12.m-b-3.rir-cont.rir-terms > div > div:nth-child(2) > div > label > input').checked = 1
-
-                                })
-
-
-                                await page.waitFor(3000)
-
-                                await page.evaluate(async () => {
-
-
-                                    document.querySelector('#main > section > form > div.col-xs-12.rir-cont.rir-buttons > div > a').click()
-
-                                })
-
-                                await clickAndWait(page, '#LoginPage_Login_Button', 0)
-
-                                await page.type('#QuickSearch_SearchText_Input', params.evento)
-                                await clickAndWait(page, '#QuickSearch_SearchButton_Button', 0)
-                                await clickAndWait(page, 'span.btn.btn-tickets', 3000)
-                                await clickAndWait(page, 'td.ticketBtn a', 3000)
-
-
-                                await page.evaluate(async (params) => {
-
-                                    document.querySelectorAll('table#tableAssortmentList_yTix tbody>tr:not(.disabled)')
-                                        .forEach(async item => {
-
-                                            if (item.querySelector('td.single-rowspan.priceCategory').textContent.trim() == params.setor &&
-                                                item.querySelector('td.single-rowspan.discountLevel').textContent.trim() == params.categoria) {
-
-                                                let cboQuantidade = item.querySelector('select');
-
-                                                if (item.querySelector('td.single-rowspan.priceCategory').textContent.trim().indexOf('MESA') > -1) {
-                                                    cboQuantidade.value = 4;
-                                                } else {
-
-                                                    let arr = item.querySelectorAll('select option');
-                                                    let quantidade_maxima = arr[arr.length - 1].textContent;
-
-                                                    if (params.quantidade > quantidade_maxima) {
-                                                        cboQuantidade.value = quantidade_maxima;
-                                                    } else {
-                                                        cboQuantidade.value = params.quantidade;
-                                                    }
-
-                                                }
+                                            if (params.quantidade < item.value) {
+                                                item.value = params.quantidade;
                                             }
+                                        }
 
-                                        });
+                                    } else if (params.categoria === 'MEIA-ENTRADA') {
+
+                                        item = document.querySelector('#tab-main-content0 > div > fieldset:nth-child(1) > div.form-group.row.half-price-type > div > select');
+
+                                        if (item) {
+
+                                            item.selectedIndex = item.options.length - 1;
+
+                                            if (params.quantidade < item.value) {
+                                                item.value = params.quantidade;
+                                            }
+                                        }
+
+                                    }
 
                                 }, params);
+
+                                // await page.evaluate(async ()=> {
+
+                                //     document.querySelector('#exampleSelect2').value = 0;
+                                // })
+
+                                // await page.type('#nameDelivery', params.nome)
+                                // await page.type('#id', params.identidade)
+                                // await page.type('#ddd', params.ddd)
+                                // await page.type('#tel', params.telefone)
+                                // await page.type('#cep', params.cep)
+
+                                // await page.waitFor(3000)
+
+                                // await page.evaluate(async (params) => {
+
+                                //     document.querySelector('#main > section > form > fieldset.col-xs-12.rir-cont.rir-delivery-data.p-t-3 > section > div > div:nth-child(2) > div:nth-child(5) > div.col-xs-3.m-b-1 > a').click()
+
+                                // }, params)
+
+                                // await page.waitFor(3000)
+
+                                // await page.type('#number', params.endereco_numero)
+                                // await page.type('#complement', params.endereco_complemento)
+
+                                // await page.type('#card-brand', params.cartao_bandeira)
+                                // await page.type('#card-number', params.cartao_numero)
+                                // await page.type('#card-name', params.cartao_nome)
+
+                                // await page.type('#card-cpf', params.cpf)
+                                // await page.type('#card-valid', params.cartao_data_vencimento)
+                                // await page.type('#card-name', params.cartao_nome)
+                                // await page.type('#cvv', params.cartao_cvc)
+
+
+                                // await page.evaluate(async () => {
+
+                                //     document.querySelector('#main > section > form > div.col-xs-12.m-b-3.rir-cont.rir-terms > div > div:nth-child(2) > div > label > input').checked = 1
+
+                                // })
+
+
+                                // await page.waitFor(3000)
+
+                                // await page.evaluate(async () => {
+
+
+                                //     document.querySelector('#main > section > form > div.col-xs-12.rir-cont.rir-buttons > div > a').click()
+
+                                // })
+                                
 
                                 index++;
 
